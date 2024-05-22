@@ -1,3 +1,5 @@
 /.env
 /ffplay.exe
 /ffprobe.exe
+/ffmpeg.exe
+/__pycache__
