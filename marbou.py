@@ -126,9 +126,12 @@ def run_bot():
             if messages:
                 random_message = random.choice(messages)
                 if random_message.content:
-                    await target_channel.send(random_message.content)
+                    sent_message = await target_channel.send(f'Error: O nie ktoś rozlał piwko na serwery!!!\n Wyciek danych...\n{random_message.content}')
                 else:
                     await target_channel.send("\"Załóż czapke\" - Marbou bot")
+                await asyncio.sleep(60)
+                #delete sent message
+                await sent_message.delete()
 
     @random_quote.before_loop
     async def before_random_quote():
