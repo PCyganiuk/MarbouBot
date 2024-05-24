@@ -12,6 +12,10 @@ def run_bot():
     GENERAL_TEXT_CHANNEL = 609841336547410046
     CYTATY_TEXT_CHANNEL = 1014167636306829332
     TEST_BOT_TEXT_CHANNEL = 1242091992750620672
+
+    KOSTYKA_ID = 214659041706770432
+    NORMIE_BE_LIKE_ID = 444953338631421953
+    VENGEFUL1_ID = 428594821351997440
     intents = discord.Intents.default()
     intents.message_content = True
     client = discord.Client(intents=intents)
@@ -38,24 +42,32 @@ def run_bot():
     @client.event
     async def on_message(message):
         if message.content.startswith("Ej Bartek zaśpiewaj"):
-            try:
-                voice_client = await message.author.voice.channel.connect()
-                voice_clients[voice_client.guild.id] = voice_client
-            except Exception as e:
-                print(e)
+            chuj_moment = random.randint(1, 10)
+            if message.author.id == KOSTYKA_ID and chuj_moment == 10:
+                target_channel = message.channel
+                await target_channel.send("Sam zaśpiewaj Bartek")
+            else:
+                try:
+                    voice_client = await message.author.voice.channel.connect()
+                    voice_clients[voice_client.guild.id] = voice_client
+                except Exception as e:
+                    print(e)
 
-            try:
-                url = message.content.split()[3]
+                try:
+                    if message.author.id == NORMIE_BE_LIKE_ID and chuj_moment > 8:
+                        url = "https://www.youtube.com/watch?v=ytWz0qVvBZ0&ab_channel=TheYogscast"
+                    else:
+                        url = message.content.split()[3]
 
-                loop = asyncio.get_event_loop()
-                data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
+                    loop = asyncio.get_event_loop()
+                    data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
 
-                song = data['url']
-                player = discord.FFmpegOpusAudio(song, **ffmpeg_options)
+                    song = data['url']
+                    player = discord.FFmpegOpusAudio(song, **ffmpeg_options)
 
-                voice_clients[message.guild.id].play(player, after=lambda e: asyncio.run_coroutine_threadsafe(play_next(message), client.loop))
-            except Exception as e:
-                print(e)
+                    voice_clients[message.guild.id].play(player, after=lambda e: asyncio.run_coroutine_threadsafe(play_next(message), client.loop))
+                except Exception as e:
+                    print(e)
 
         if message.content.startswith("przerwa na 🍻") or message.content.startswith("przerwa na 🍺") or message.content.startswith("przerwa na piwko"):
             try:
@@ -108,7 +120,8 @@ def run_bot():
                                       "przerwa na piwko         marbou idzie na piwko i przerywa koncert\n"\
                                       "szybki łyczek whiskey        marbou bierze szybkiego łyczka złotego trunku\n"\
                                       "po przerwie      przywłuje marbou żeby grał dalej\n"\
-                                      "status       podaje aktualny status poziomu płynu w kuflu")
+                                      "status       podaje aktualny status poziomu płynu w kuflu\n"\
+                                      "potem zaśpiewaj <youtube URL>     Dodaje do kolejki utwór z linku. Jak nic nie ma w kolejce nie zadziała ")
             
     @tasks.loop(hours=24)
     async def random_quote():
@@ -130,7 +143,6 @@ def run_bot():
                 else:
                     await target_channel.send("\"Załóż czapke\" - Marbou bot")
                 await asyncio.sleep(60)
-                #delete sent message
                 await sent_message.delete()
 
     @random_quote.before_loop
