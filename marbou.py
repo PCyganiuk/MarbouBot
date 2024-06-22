@@ -3,6 +3,7 @@ import os
 import asyncio
 import yt_dlp
 import random
+import requests
 from dotenv import load_dotenv
 from discord.ext import tasks
 
@@ -54,10 +55,11 @@ def run_bot():
                     print(e)
 
                 try:
-                    if message.author.id == NORMIE_BE_LIKE_ID and chuj_moment > 8:
+                    if message.author.id == NORMIE_BE_LIKE_ID and chuj_moment > 9:
                         url = "https://www.youtube.com/watch?v=ytWz0qVvBZ0&ab_channel=TheYogscast"
                     else:
                         url = message.content.split()[3]
+                        url = "https://v.animethemes.moe/HajimeNoIppo-OP3.webm"
 
                     loop = asyncio.get_event_loop()
                     data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
@@ -113,6 +115,17 @@ def run_bot():
             queues[message.guild.id].append(url)
             target_channel = message.channel
             await target_channel.send("dodano do kolejki kowboju EEEEEHAAAAA!")
+
+        if message.content.startswith("anime contest"):
+            rounds  = message.split()[2]
+            id_list =  random.sample(range(1, 17500 + 1), rounds)
+            url = "https://api.animethemes.moe/video/"
+            for id in id_list:
+                params = {
+                    "filter": id
+                }
+                response = requests.get(url,params=params)
+                
     
         if message.content.startswith("marbou help"):
             target_channel = client.get_channel(message.channel.id)
