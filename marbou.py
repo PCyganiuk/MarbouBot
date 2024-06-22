@@ -3,7 +3,11 @@ import os
 import asyncio
 import yt_dlp
 import random
+import wave
+import tempfile
 import requests
+from pyht import Client
+from pyht.client import TTSOptions
 from dotenv import load_dotenv
 from discord.ext import tasks
 
@@ -13,6 +17,14 @@ def run_bot():
     GENERAL_TEXT_CHANNEL = 609841336547410046
     CYTATY_TEXT_CHANNEL = 1014167636306829332
     TEST_BOT_TEXT_CHANNEL = 1242091992750620672
+
+    PYHT_ID = os.getenv('pyht_id')
+    PYHT_KEY = os.getenv('pyht_key')
+    pyht_client = Client(
+        user_id=PYHT_ID,
+        api_key=PYHT_KEY,
+    )
+    pyht_options = TTSOptions(voice="s3://voice-cloning-zero-shot/abc2d0e6-9433-4dcc-b416-0b035169f37e/original/manifest.json")
 
     KOSTYKA_ID = 214659041706770432
     NORMIE_BE_LIKE_ID = 444953338631421953
@@ -59,11 +71,9 @@ def run_bot():
                         url = "https://www.youtube.com/watch?v=ytWz0qVvBZ0&ab_channel=TheYogscast"
                     else:
                         url = message.content.split()[3]
-                        url = "https://v.animethemes.moe/HajimeNoIppo-OP3.webm"
 
                     loop = asyncio.get_event_loop()
                     data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
-
                     song = data['url']
                     player = discord.FFmpegOpusAudio(song, **ffmpeg_options)
 
@@ -117,14 +127,47 @@ def run_bot():
             await target_channel.send("dodano do kolejki kowboju EEEEEHAAAAA!")
 
         if message.content.startswith("anime contest"):
+            rdy_list = []
             rounds  = message.split()[2]
             id_list =  random.sample(range(1, 17500 + 1), rounds)
             url = "https://api.animethemes.moe/video/"
             for id in id_list:
                 params = {
-                    "filter": id
+                    "filter[id]": id
                 }
                 response = requests.get(url,params=params)
+                
+                record = response.json()
+                if 'videos' in record:
+                    filename = record.get('filename', 'N/A')
+                    link = record.get('link','N/A')
+                    #if '-OP' in filename:
+                        
+                
+
+
+        if message.content.startswith("Ej Marbou powiedz:"):
+            speech = message.content.split(":")[1]
+            chunks = []
+            for chunk in pyht_client.tts(speech,pyht_options):
+                chunks.append(chunk)
+            audio_data = b''.join(chunks)
+            with open("temp_audio.wav","wb") as temp_audio_file:
+                temp_audio_file.write(audio_data)
+
+            try:
+                voice_client = await message.author.voice.channel.connect()
+                voice_clients[voice_client.guild.id] = voice_client
+            except Exception as e:
+                print(e)
+            try:
+                voice_clients[message.guild.id].stop()
+                source = discord.FFmpegPCMAudio("temp_audio.wav")
+                voice_clients[message.guild.id].play(source)
+            except Exception as e:
+                print (e)
+            
+
                 
     
         if message.content.startswith("marbou help"):
