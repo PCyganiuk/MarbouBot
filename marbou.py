@@ -4,7 +4,7 @@ import asyncio
 import yt_dlp
 import random
 from dotenv import load_dotenv
-from discord.ext import commands, tasks
+from discord.ext import tasks
 
 def run_bot():
     load_dotenv()
@@ -132,14 +132,14 @@ def run_bot():
         target_channel = client.get_channel(GENERAL_TEXT_CHANNEL)
         if source_channel and target_channel:
             messages = []
-            async for message in source_channel.history(limit=200):
+            async for message in source_channel.history(limit=500):
                 if message.content.startswith("\""):
                     messages.append(message)
 
             if messages:
                 random_message = random.choice(messages)
                 if random_message.content:
-                    sent_message = await target_channel.send(f'Error: O nie ktoś rozlał piwko na serwery!!!\n Wyciek danych...\n{random_message.content}')
+                    sent_message = await target_channel.send(f'Error: O nie ktoś rozlał piwko na serwery!!!\n Wyciek danych...\n ||{random_message.content}||')
                 else:
                     await target_channel.send("\"Załóż czapke\" - Marbou bot")
                 await asyncio.sleep(60)
