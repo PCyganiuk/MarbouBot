@@ -9,7 +9,7 @@ import requests
 from pyht import Client
 from pyht.client import TTSOptions
 from dotenv import load_dotenv
-from discord.ext import tasks
+from discord.ext import tasks, commands
 
 def run_bot():
     load_dotenv()
@@ -32,6 +32,9 @@ def run_bot():
     intents = discord.Intents.default()
     intents.message_content = True
     client = discord.Client(intents=intents)
+    bot = commands.Bot(command_prefix="!", intents=intents)
+
+    ANIME_URL = "https://api.animethemes.moe/video/"
 
     queues = {}
     voice_clients = {}
@@ -39,6 +42,17 @@ def run_bot():
     ytdl = yt_dlp.YoutubeDL(yt_dl_options)
 
     ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn -filter:a "volume=0.25"'}
+
+    async def play_audio(ctx, url):
+        if ctx.author.voice:
+            channel = ctx.author.voice.channel
+            vc = await channel.connect()
+
+            vc.play(discord.FFmpegPCMAudio(url))
+            return vc
+        else:
+            await ctx.send("You need to be in a voice channel to start the contest!")
+            return None
 
     @client.event
     async def on_ready():
@@ -126,26 +140,6 @@ def run_bot():
             target_channel = message.channel
             await target_channel.send("dodano do kolejki kowboju EEEEEHAAAAA!")
 
-        if message.content.startswith("anime contest"):
-            rdy_list = []
-            rounds  = message.split()[2]
-            id_list =  random.sample(range(1, 17500 + 1), rounds)
-            url = "https://api.animethemes.moe/video/"
-            for id in id_list:
-                params = {
-                    "filter[id]": id
-                }
-                response = requests.get(url,params=params)
-                
-                record = response.json()
-                if 'videos' in record:
-                    filename = record.get('filename', 'N/A')
-                    link = record.get('link','N/A')
-                    #if '-OP' in filename:
-                        
-                
-
-
         if message.content.startswith("Ej Marbou powiedz:"):
             speech = message.content.split(":")[1]
             chunks = []
@@ -178,7 +172,36 @@ def run_bot():
                                       "po przerwie      przywłuje marbou żeby grał dalej\n"\
                                       "status       podaje aktualny status poziomu płynu w kuflu\n"\
                                       "potem zaśpiewaj <youtube URL>     Dodaje do kolejki utwór z linku. Jak nic nie ma w kolejce nie zadziała ")
-            
+    @bot.command(name="animeContest")
+    async def anime_contest(ctx, rounds: int):
+        try:
+            rdy_list = []
+            checked_ids = set()
+            while len(rdy_list) < rounds:
+                id = random.randint(1, 17500)
+                if id in checked_ids:
+                    continue
+                checked_ids.add(id)
+                params = {"filter[id]": id}
+                response = requests.get(ANIME_URL,params=params)
+                
+                record = response.json()
+                if 'videos' in record:
+                    filename = record.get('filename', 'N/A')
+                    link = record.get('link','N/A')
+                    if '-OP' in filename:
+                        rdy_list.append((filename, link))
+                
+            for filename, link in rdy_list:
+                vc = await play_audio(ctx, link)
+                if not vc:
+                    return
+                
+                await ctx.send
+
+        except Exception as e:
+            await ctx.send(f"An error occured: {e}")
+
     @tasks.loop(hours=24)
     async def random_quote():
         random_seconds = random.randint(0, 86400)
