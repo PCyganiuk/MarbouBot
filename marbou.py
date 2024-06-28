@@ -31,7 +31,6 @@ def run_bot():
     VENGEFUL1_ID = 428594821351997440
     intents = discord.Intents.default()
     intents.message_content = True
-    client = discord.Client(intents=intents)
     bot = commands.Bot(command_prefix="!", intents=intents)
 
     ANIME_URL = "https://api.animethemes.moe/video/"
@@ -54,9 +53,9 @@ def run_bot():
             await ctx.send("You need to be in a voice channel to start the contest!")
             return None
 
-    @client.event
+    @bot.event
     async def on_ready():
-        print(f'{client.user} is GOLD')
+        print(f'{bot.user} is GOLD')
         random_quote.start()
 
     async def play_next(message):
@@ -66,7 +65,7 @@ def run_bot():
             await target_channel.send(f'Ej Bartek zaśpiewaj {link}')
 
     
-    @client.event
+    @bot.event
     async def on_message(message):
         if message.content.startswith("Ej Bartek zaśpiewaj"):
             chuj_moment = random.randint(1, 10)
@@ -91,7 +90,7 @@ def run_bot():
                     song = data['url']
                     player = discord.FFmpegOpusAudio(song, **ffmpeg_options)
 
-                    voice_clients[message.guild.id].play(player, after=lambda e: asyncio.run_coroutine_threadsafe(play_next(message), client.loop))
+                    voice_clients[message.guild.id].play(player, after=lambda e: asyncio.run_coroutine_threadsafe(play_next(message), bot.loop))
                 except Exception as e:
                     print(e)
 
@@ -165,7 +164,7 @@ def run_bot():
                 
     
         if message.content.startswith("marbou help"):
-            target_channel = client.get_channel(message.channel.id)
+            target_channel = bot.get_channel(message.channel.id)
             await target_channel.send("Ej Bartek zaśpiewaj <youtube URL>        odpala muzykę z podanego linku z YT\n"\
                                       "przerwa na piwko         marbou idzie na piwko i przerywa koncert\n"\
                                       "szybki łyczek whiskey        marbou bierze szybkiego łyczka złotego trunku\n"\
@@ -175,6 +174,7 @@ def run_bot():
     @bot.command(name="animeContest")
     async def anime_contest(ctx, rounds: int):
         try:
+            print("command jeszcze nie działa")
             rdy_list = []
             checked_ids = set()
             while len(rdy_list) < rounds:
@@ -207,8 +207,8 @@ def run_bot():
         random_seconds = random.randint(0, 86400)
         await asyncio.sleep(random_seconds)
         print(f'task loop działa +{random_seconds}s')
-        source_channel = client.get_channel(CYTATY_TEXT_CHANNEL)
-        target_channel = client.get_channel(GENERAL_TEXT_CHANNEL)
+        source_channel = bot.get_channel(CYTATY_TEXT_CHANNEL)
+        target_channel = bot.get_channel(GENERAL_TEXT_CHANNEL)
         if source_channel and target_channel:
             messages = []
             async for message in source_channel.history(limit=500):
@@ -226,6 +226,5 @@ def run_bot():
 
     @random_quote.before_loop
     async def before_random_quote():
-        print("czekam")
-        await client.wait_until_ready()
-    client.run(TOKEN)
+        await bot.wait_until_ready()
+    bot.run(TOKEN)
