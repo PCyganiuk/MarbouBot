@@ -159,7 +159,55 @@ def run_bot():
                 voice_clients[message.guild.id].play(source)
             except Exception as e:
                 print (e)
-            
+
+        if message.content.startswith("anime contest"):
+            try:
+                print("command jeszcze nie działa")
+                ctx = await bot.get_context(message)
+                rdy_list = []
+                checked_ids = set()
+                while len(rdy_list) < int(message.content.split()[2]):
+                    id = random.randint(1, 17500)
+                    if id in checked_ids:
+                        continue
+                    checked_ids.add(id)
+                    params = {"filter[id]": id}
+                    response = requests.get(ANIME_URL,params=params)
+                    
+                    record = response.json()
+                    video_data = record['videos'][0]
+                    filename = video_data.get('filename', 'N/A')
+                    link = video_data.get('link', 'N/A')
+                    if '-OP' in filename:
+                        rdy_list.append((filename, link))
+                        print(f"title{filename} link {link}")
+
+                print("fetched records")
+                    
+                for filename, link in rdy_list:
+                    vc = await play_audio(ctx, link)
+                    if not vc:
+                        return
+                    
+                    await ctx.send("Guess the anime! Type your answer in the chat.")
+
+                    def check(m):
+                        return m.channel == ctx.channel and m.content.lower() in filename.lower()
+                    
+                    try:
+                        msg = await bot.wait_for('message', check=check, timeout=90.0)
+                        await ctx.send(f"Congratulations {msg.author.mention}, you guessed it right!")
+                        vc.stop()
+                    except asyncio.TimeoutError:
+                        await ctx.send("time's up! no one guessed the anime")
+
+                    while vc.is_playing():
+                        await asyncio.sleep(1)
+                    await vc.disconnect()
+
+            except Exception as e:
+                await ctx.send(f"An error occured: {e}")
+                print(f"An error occurred: {e}")     
 
                 
     
@@ -171,7 +219,8 @@ def run_bot():
                                       "po przerwie      przywłuje marbou żeby grał dalej\n"\
                                       "status       podaje aktualny status poziomu płynu w kuflu\n"\
                                       "potem zaśpiewaj <youtube URL>     Dodaje do kolejki utwór z linku. Jak nic nie ma w kolejce nie zadziała ")
-    @bot.command(name="animeContest")
+    
+    @bot.command(name="contest")
     async def anime_contest(ctx, rounds: int):
         try:
             print("command jeszcze nie działa")
@@ -197,10 +246,25 @@ def run_bot():
                 if not vc:
                     return
                 
-                await ctx.send
+                await ctx.send("Guess the anime! Type your answer in the chat.")
+
+                def check(m):
+                    return m.channel == ctx.channel and m.content.lower() in filename.lower()
+                
+                try:
+                    msg = await bot.wait_for('message', check=check, timeout=30.0)
+                    await ctx.send(f"Congratulations {msg.author.mention}, you guessed it right!")
+                    vc.stop()
+                except asyncio.TimeoutError:
+                    await ctx.send("time's up! no one guessed the anime")
+
+                while vc.is_playing():
+                    await asyncio.sleep(1)
+                await vc.disconnect()
 
         except Exception as e:
             await ctx.send(f"An error occured: {e}")
+            print(f"An error occurred: {e}")
 
     @tasks.loop(hours=24)
     async def random_quote():
