@@ -102,7 +102,7 @@ def run_bot():
                 print(e)
             try:
                 voice_clients[message.guild.id].stop()
-                source = discord.FFmpegPCMAudio("beer.mp3")
+                source = discord.FFmpegPCMAudio("assets/beer.mp3")
                 voice_clients[message.guild.id].play(source)
             except Exception as e:
                 print (e)
@@ -126,7 +126,7 @@ def run_bot():
                 print(e)
             try:
                 voice_clients[message.guild.id].stop()
-                source = discord.FFmpegPCMAudio("pelne_check.mp3")
+                source = discord.FFmpegPCMAudio("assets/pelne_check.mp3")
                 voice_clients[message.guild.id].play(source)
             except Exception as e:
                 print (e)
