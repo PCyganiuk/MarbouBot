@@ -3,10 +3,11 @@ import os
 import asyncio
 import yt_dlp
 import random
-import wave
-import tempfile
 import requests
+import textwrap
+import string
 from pyht import Client
+from PIL import Image, ImageDraw, ImageFont
 from pyht.client import TTSOptions
 from dotenv import load_dotenv
 from discord.ext import tasks, commands
@@ -145,7 +146,7 @@ def run_bot():
             for chunk in pyht_client.tts(speech,pyht_options):
                 chunks.append(chunk)
             audio_data = b''.join(chunks)
-            with open("temp_audio.wav","wb") as temp_audio_file:
+            with open("assets/temp_audio.wav","wb") as temp_audio_file:
                 temp_audio_file.write(audio_data)
 
             try:
@@ -155,7 +156,7 @@ def run_bot():
                 print(e)
             try:
                 voice_clients[message.guild.id].stop()
-                source = discord.FFmpegPCMAudio("temp_audio.wav")
+                source = discord.FFmpegPCMAudio("assets/temp_audio.wav")
                 voice_clients[message.guild.id].play(source)
             except Exception as e:
                 print (e)
@@ -220,51 +221,34 @@ def run_bot():
                                       "status       podaje aktualny status poziomu płynu w kuflu\n"\
                                       "potem zaśpiewaj <youtube URL>     Dodaje do kolejki utwór z linku. Jak nic nie ma w kolejce nie zadziała ")
     
-    @bot.command(name="contest")
-    async def anime_contest(ctx, rounds: int):
-        try:
-            print("command jeszcze nie działa")
-            rdy_list = []
-            checked_ids = set()
-            while len(rdy_list) < rounds:
-                id = random.randint(1, 17500)
-                if id in checked_ids:
-                    continue
-                checked_ids.add(id)
-                params = {"filter[id]": id}
-                response = requests.get(ANIME_URL,params=params)
-                
-                record = response.json()
-                if 'videos' in record:
-                    filename = record.get('filename', 'N/A')
-                    link = record.get('link','N/A')
-                    if '-OP' in filename:
-                        rdy_list.append((filename, link))
-                
-            for filename, link in rdy_list:
-                vc = await play_audio(ctx, link)
-                if not vc:
-                    return
-                
-                await ctx.send("Guess the anime! Type your answer in the chat.")
+    polish_to_universal = str.maketrans(
+        'ąćęłńóśźżĄĆĘŁŃÓŚŹŻ',
+        'acelnoszzACELNOSZZ'
+    )
 
-                def check(m):
-                    return m.channel == ctx.channel and m.content.lower() in filename.lower()
-                
-                try:
-                    msg = await bot.wait_for('message', check=check, timeout=30.0)
-                    await ctx.send(f"Congratulations {msg.author.mention}, you guessed it right!")
-                    vc.stop()
-                except asyncio.TimeoutError:
-                    await ctx.send("time's up! no one guessed the anime")
+    def insert_newlines_at_whitespace(text, interval):
+        lines = text.split('\n')
+        
+        def split_line_at_whitespace(line, interval):
+            words = line.split()
+            result = []
+            current_line = []
 
-                while vc.is_playing():
-                    await asyncio.sleep(1)
-                await vc.disconnect()
-
-        except Exception as e:
-            await ctx.send(f"An error occured: {e}")
-            print(f"An error occurred: {e}")
+            for word in words:
+                if len(' '.join(current_line + [word])) > interval:
+                    result.append(' '.join(current_line))
+                    current_line = [word]
+                else:
+                    current_line.append(word)
+            
+            if current_line:
+                result.append(' '.join(current_line))
+            
+            return '\n'.join(result)
+    
+        processed_lines = [split_line_at_whitespace(line, interval) for line in lines]
+        
+        return '\n'.join(processed_lines)
 
     @tasks.loop(hours=24)
     async def random_quote():
@@ -275,14 +259,39 @@ def run_bot():
         target_channel = bot.get_channel(GENERAL_TEXT_CHANNEL)
         if source_channel and target_channel:
             messages = []
-            async for message in source_channel.history(limit=500):
+            async for message in source_channel.history(limit=1000):
                 if message.content.startswith("\""):
                     messages.append(message)
 
             if messages:
                 random_message = random.choice(messages)
                 if random_message.content:
-                    sent_message = await target_channel.send(f'Error: O nie ktoś rozlał piwko na serwery!!!\n Wyciek danych...\n ||{random_message.content}||')
+                    original_gif = Image.open("assets/marbou_message.gif")
+                    temp_gif_path = "SPOILER_temp_gif.gif"
+                    frames = []
+                    try:
+                        while True:
+                            frame = original_gif.copy()
+                            frames.append(frame)
+                            original_gif.seek(len(frames))
+                    except EOFError:
+                        pass
+
+                    font_path = "assets/GlitchGoblin-2O87v.ttf"
+                    font = ImageFont.truetype(font_path,15)
+                    text_pos = (5, 370)
+                    text_to_add = random_message.content
+                    text_to_add = insert_newlines_at_whitespace(random_message.content,65)
+                    text_to_add = text_to_add.translate(polish_to_universal)
+                    new_frames = []
+                    for frame in frames:
+                        draw = ImageDraw.Draw(frame)
+                        draw.text(text_pos,text_to_add, font=font, fill="black")
+                        new_frames.append(frame)
+                    new_frames[0].save(temp_gif_path,save_all=True,append_images=new_frames[1:],loop=0)
+                    with open(temp_gif_path,"rb") as f:
+                        picture = discord.File(f)
+                        sent_message = await target_channel.send(file=picture)
                 else:
                     await target_channel.send("\"Załóż czapke\" - Marbou bot")
                 await asyncio.sleep(60)
