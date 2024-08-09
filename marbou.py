@@ -247,13 +247,13 @@ def run_bot():
         
         return '\n'.join(processed_lines)
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(hours=24)
     async def random_quote():
         random_seconds = random.randint(0, 86400)
         #await asyncio.sleep(random_seconds)
         print(f'task loop działa +{random_seconds}s')
         source_channel = bot.get_channel(CYTATY_TEXT_CHANNEL)
-        target_channel = bot.get_channel(TEST_BOT_TEXT_CHANNEL) #TODO change to general for prod
+        target_channel = bot.get_channel(GENERAL_TEXT_CHANNEL)
         if source_channel and target_channel:
             messages = []
             async for message in source_channel.history(limit=1000):
