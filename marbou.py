@@ -4,8 +4,6 @@ import asyncio
 import yt_dlp
 import random
 import requests
-import textwrap
-import string
 from pyht import Client
 from PIL import Image, ImageDraw, ImageFont
 from pyht.client import TTSOptions
