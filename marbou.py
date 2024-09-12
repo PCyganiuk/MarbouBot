@@ -161,7 +161,6 @@ def run_bot():
 
         if message.content.startswith("anime contest"):
             try:
-                print("command jeszcze nie działa")
                 ctx = await bot.get_context(message)
                 rdy_list = []
                 checked_ids = set()
@@ -180,25 +179,23 @@ def run_bot():
                     if '-OP' in filename:
                         rdy_list.append((filename, link))
                         print(f"title{filename} link {link}")
-
-                print("fetched records")
                     
                 for filename, link in rdy_list:
                     vc = await play_audio(ctx, link)
                     if not vc:
                         return
                     
-                    await ctx.send("Guess the anime! Type your answer in the chat.")
+                    await ctx.send("Zgadnij opening cowboyu EEEEEEHHHAAAA!!!")
 
                     def check(m):
                         return m.channel == ctx.channel and m.content.lower() in filename.lower()
                     
                     try:
                         msg = await bot.wait_for('message', check=check, timeout=90.0)
-                        await ctx.send(f"Congratulations {msg.author.mention}, you guessed it right!")
+                        await ctx.send(f"Brawa dla {msg.author.mention}, kolejka dla ciebe na mój koszt")
                         vc.stop()
                     except asyncio.TimeoutError:
-                        await ctx.send("time's up! no one guessed the anime")
+                        await ctx.send("Ajajaj nikt nie zgadł żałosne")
 
                     while vc.is_playing():
                         await asyncio.sleep(1)
@@ -251,7 +248,7 @@ def run_bot():
     @tasks.loop(hours=24)
     async def random_quote():
         random_seconds = random.randint(0, 86400)
-        await asyncio.sleep(random_seconds)
+        #await asyncio.sleep(random_seconds)
         print(f'task loop działa +{random_seconds}s')
         source_channel = bot.get_channel(CYTATY_TEXT_CHANNEL)
         target_channel = bot.get_channel(GENERAL_TEXT_CHANNEL)
@@ -264,7 +261,7 @@ def run_bot():
             if messages:
                 random_message = random.choice(messages)
                 if random_message.content:
-                    original_gif = Image.open("assets/marbou_message.gif")
+                    original_gif = Image.open("assets/piwko.gif")
                     temp_gif_path = "SPOILER_temp_gif.gif"
                     frames = []
                     try:
@@ -276,8 +273,8 @@ def run_bot():
                         pass
 
                     font_path = "assets/GlitchGoblin-2O87v.ttf"
-                    font = ImageFont.truetype(font_path,15)
-                    text_pos = (5, 370)
+                    font = ImageFont.truetype(font_path,30)
+                    text_pos = (20, 20) #5 370
                     text_to_add = random_message.content
                     text_to_add = insert_newlines_at_whitespace(random_message.content,65)
                     text_to_add = text_to_add.translate(polish_to_universal)
