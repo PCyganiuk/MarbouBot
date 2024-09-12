@@ -248,7 +248,7 @@ def run_bot():
     @tasks.loop(hours=24)
     async def random_quote():
         random_seconds = random.randint(0, 86400)
-        #await asyncio.sleep(random_seconds)
+        await asyncio.sleep(random_seconds)
         print(f'task loop działa +{random_seconds}s')
         source_channel = bot.get_channel(CYTATY_TEXT_CHANNEL)
         target_channel = bot.get_channel(GENERAL_TEXT_CHANNEL)
