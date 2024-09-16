@@ -4,5 +4,5 @@
 /ffmpeg.exe
 /__pycache__
 /env
-/temp_audio.wav
+/assets/temp_audio.wav
 /SPOILER_temp_gif.gif
