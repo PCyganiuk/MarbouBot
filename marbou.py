@@ -16,6 +16,7 @@ def run_bot():
     GENERAL_TEXT_CHANNEL = 609841336547410046
     CYTATY_TEXT_CHANNEL = 1014167636306829332
     TEST_BOT_TEXT_CHANNEL = 1242091992750620672
+    NOT_MESSAGE = 1122278853562343565
 
     PYHT_ID = os.getenv('pyht_id')
     PYHT_KEY = os.getenv('pyht_key')
@@ -255,7 +256,7 @@ def run_bot():
         if source_channel and target_channel:
             messages = []
             async for message in source_channel.history(limit=1000):
-                if message.content.startswith("\""):
+                if message.content.startswith("\"") or message.content.startswith(",,") and not message.id == NOT_MESSAGE:
                     messages.append(message)
 
             if messages:
