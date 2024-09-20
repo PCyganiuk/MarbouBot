@@ -89,7 +89,6 @@ def run_bot():
                     data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
                     song = data['url']
                     player = discord.FFmpegOpusAudio(song, **ffmpeg_options)
-
                     voice_clients[message.guild.id].play(player, after=lambda e: asyncio.run_coroutine_threadsafe(play_next(message), bot.loop))
                 except Exception as e:
                     print(e)
@@ -217,6 +216,13 @@ def run_bot():
                                       "status       podaje aktualny status poziomu płynu w kuflu\n"\
                                       "potem zaśpiewaj <youtube URL>     Dodaje do kolejki utwór z linku. Jak nic nie ma w kolejce nie zadziała ")
     
+    @bot.event
+    async def on_voice_state_update(member, before, after):
+        if before.channel and not after.channel:
+            voice_client = discord.utils.get(bot.voice_clients, guild=before.channel.guild)
+            if voice_client and len(voice_client.channel.members) == 1:  # Only bot left
+                await voice_client.disconnect()
+
     polish_to_universal = str.maketrans(
         'ąćęłńóśźżĄĆĘŁŃÓŚŹŻ',
         'acelnoszzACELNOSZZ'

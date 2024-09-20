@@ -1,7 +1,4 @@
 /.env
-/ffplay.exe
-/ffprobe.exe
-/ffmpeg.exe
 /__pycache__
 /env
 /assets/temp_audio.wav
