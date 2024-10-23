@@ -210,7 +210,7 @@ def run_bot():
     
         if message.content.startswith("marbou help"):
             target_channel = bot.get_channel(message.channel.id)
-            await target_channel.send("```Ej Bartek zaśpiewaj <youtube URL>  odpala muzykę z podanego linku z YT\n"\
+            await target_channel.send("```Ej Bartek zaśpiewaj <youtube URL>     odpala muzykę z podanego linku z YT\n"\
                                       "przerwa na piwko                 marbou idzie na piwko i przerywa koncert\n"\
                                       "szybki łyczek whiskey       marbou bierze szybkiego łyczka złotego trunku\n"\
                                       "po przerwie                              przywłuje marbou żeby grał dalej\n"\
@@ -304,6 +304,6 @@ def run_bot():
     async def before_random_quote():
         await bot.wait_until_ready()
 
-    webserver.keep_alive()
+    #webserver.keep_alive() # if on render
 
     bot.run(TOKEN)
