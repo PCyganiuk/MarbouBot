@@ -1,4 +1,5 @@
 import discord
+import webserver
 import os
 import asyncio
 import yt_dlp
@@ -302,4 +303,7 @@ def run_bot():
     @random_quote.before_loop
     async def before_random_quote():
         await bot.wait_until_ready()
+
+    webserver.keep_alive()
+
     bot.run(TOKEN)
