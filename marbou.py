@@ -304,6 +304,6 @@ def run_bot():
     async def before_random_quote():
         await bot.wait_until_ready()
 
-    webserver.keep_alive() # if on render
+    #webserver.keep_alive() # if on render
 
     bot.run(TOKEN)
