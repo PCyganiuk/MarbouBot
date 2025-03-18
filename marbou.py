@@ -19,17 +19,18 @@ def run_bot():
     TEST_BOT_TEXT_CHANNEL = 1242091992750620672
     NOT_MESSAGE = 1122278853562343565
 
-    PYHT_ID = os.getenv('pyht_id')
-    PYHT_KEY = os.getenv('pyht_key')
-    pyht_client = Client(
-        user_id=PYHT_ID,
-        api_key=PYHT_KEY,
-    )
-    pyht_options = TTSOptions(voice="s3://voice-cloning-zero-shot/abc2d0e6-9433-4dcc-b416-0b035169f37e/original/manifest.json")
+    #PYHT_ID = os.getenv('pyht_id')
+    #PYHT_KEY = os.getenv('pyht_key')
+    #pyht_client = Client(
+    #    user_id=PYHT_ID,
+    #   api_key=PYHT_KEY,
+    #)
+    #pyht_options = TTSOptions(voice="s3://voice-cloning-zero-shot/abc2d0e6-9433-4dcc-b416-0b035169f37e/original/manifest.json")
 
     KOSTYKA_ID = 214659041706770432
     NORMIE_BE_LIKE_ID = 444953338631421953
     VENGEFUL1_ID = 428594821351997440
+    OLIWIUU_ID = 531173644102139915
     intents = discord.Intents.default()
     intents.message_content = True
     bot = commands.Bot(command_prefix="!", intents=intents)
@@ -68,6 +69,13 @@ def run_bot():
     
     @bot.event
     async def on_message(message):
+        '''
+        if message.channel.id == CYTATY_TEXT_CHANNEL and not message.author.bot:
+            user = await bot.fetch_user(OLIWIUU_ID)
+            user.send("```"
+                      ""
+            "```")'
+        '''
         if message.content.startswith("Ej Bartek zaśpiewaj"):
             chuj_moment = random.randint(1, 10)
             if message.author.id == KOSTYKA_ID and chuj_moment == 10:
@@ -138,74 +146,6 @@ def run_bot():
             queues[message.guild.id].append(url)
             target_channel = message.channel
             await target_channel.send("dodano do kolejki kowboju EEEEEHAAAAA!")
-
-        if message.content.startswith("Ej Marbou powiedz:"):
-            speech = message.content.split(":")[1]
-            chunks = []
-            for chunk in pyht_client.tts(speech,pyht_options):
-                chunks.append(chunk)
-            audio_data = b''.join(chunks)
-            with open("assets/temp_audio.wav","wb") as temp_audio_file:
-                temp_audio_file.write(audio_data)
-
-            try:
-                voice_client = await message.author.voice.channel.connect()
-                voice_clients[voice_client.guild.id] = voice_client
-            except Exception as e:
-                print(e)
-            try:
-                voice_clients[message.guild.id].stop()
-                source = discord.FFmpegPCMAudio("assets/temp_audio.wav")
-                voice_clients[message.guild.id].play(source)
-            except Exception as e:
-                print (e)
-
-        if message.content.startswith("anime contest"):
-            try:
-                ctx = await bot.get_context(message)
-                rdy_list = []
-                checked_ids = set()
-                while len(rdy_list) < int(message.content.split()[2]):
-                    id = random.randint(1, 17500)
-                    if id in checked_ids:
-                        continue
-                    checked_ids.add(id)
-                    params = {"filter[id]": id}
-                    response = requests.get(ANIME_URL,params=params)
-                    
-                    record = response.json()
-                    video_data = record['videos'][0]
-                    filename = video_data.get('filename', 'N/A')
-                    link = video_data.get('link', 'N/A')
-                    if '-OP' in filename:
-                        rdy_list.append((filename, link))
-                        print(f"title{filename} link {link}")
-                    
-                for filename, link in rdy_list:
-                    vc = await play_audio(ctx, link)
-                    if not vc:
-                        return
-                    
-                    await ctx.send("Zgadnij opening cowboyu EEEEEEHHHAAAA!!!")
-
-                    def check(m):
-                        return m.channel == ctx.channel and m.content.lower() in filename.lower()
-                    
-                    try:
-                        msg = await bot.wait_for('message', check=check, timeout=90.0)
-                        await ctx.send(f"Brawa dla {msg.author.mention}, kolejka dla ciebe na mój koszt")
-                        vc.stop()
-                    except asyncio.TimeoutError:
-                        await ctx.send("Ajajaj nikt nie zgadł żałosne")
-
-                    while vc.is_playing():
-                        await asyncio.sleep(1)
-                    await vc.disconnect()
-
-            except Exception as e:
-                await ctx.send(f"An error occured: {e}")
-                print(f"An error occurred: {e}")     
-
                 
     
         if message.content.startswith("marbou help"):
@@ -304,6 +244,6 @@ def run_bot():
     async def before_random_quote():
         await bot.wait_until_ready()
 
-    webserver.keep_alive() # if on render
+    #webserver.keep_alive() # if on render
 
     bot.run(TOKEN)
